@@ -76,8 +76,15 @@
   .nazorigaki-img-wrap {
     margin: 8px auto; border: 2px solid #ccc; border-radius: 10px; overflow: hidden; background: #fafafa;
     position: relative; cursor: crosshair;
+    -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+    -webkit-touch-callout: none;
   }
-  .nazorigaki-img-wrap img { display: block; width: 100%; height: auto; max-width: 100%; }
+  .nazorigaki-img-wrap img {
+    display: block; width: 100%; height: auto; max-width: 100%;
+    -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+    -webkit-touch-callout: none;
+    pointer-events: none;
+  }
   .nazorigaki-img-wrap canvas {
     position: absolute; top: 0; left: 0;
     pointer-events: auto; touch-action: none;
@@ -159,7 +166,7 @@
       <p id="nazorigakiNoImage" style="display:none;padding:40px;color:#999;font-size:1rem;">この文字のなぞりがきはありません</p>
       <div id="nazorigakiSection">
         <div class="nazorigaki-img-wrap" id="nazorigakiWrap">
-          <img id="nazorigakiImg" src="nazorigaki_images/page-01.png" alt="ひつじゅん・れんしゅう なぞりがき" />
+          <img id="nazorigakiImg" src="nazorigaki_images/page-01.png" alt="ひつじゅん・れんしゅう なぞりがき" draggable="false" />
           <canvas id="nazorigakiCanvas"></canvas>
         </div>
         <div class="btn-row">
@@ -410,10 +417,12 @@ function setupNazorigakiDrawing() {
 
 function initNazorigakiCanvas() {
   const img = document.getElementById('nazorigakiImg');
+  const wrap = document.getElementById('nazorigakiWrap');
+  wrap.addEventListener('contextmenu', e => e.preventDefault());
   function syncCanvas() { resizeNazorigakiCanvas(); }
   img.addEventListener('load', syncCanvas);
   window.addEventListener('resize', syncCanvas);
-  new ResizeObserver(syncCanvas).observe(document.getElementById('nazorigakiWrap'));
+  new ResizeObserver(syncCanvas).observe(wrap);
   syncCanvas();
   setupNazorigakiDrawing();
 }
