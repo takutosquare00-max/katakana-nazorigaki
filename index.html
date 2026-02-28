@@ -400,6 +400,7 @@ function setupNazorigakiDrawing() {
   const canvas = document.getElementById('nazorigakiCanvas');
   const ctx = canvas.getContext('2d');
   let drawing = false;
+  canvas.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
   canvas.addEventListener('pointerdown', e => {
     drawing = true; ctx.beginPath();
     const r = canvas.getBoundingClientRect();
