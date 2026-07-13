@@ -142,11 +142,11 @@
   <button class="category-tab" onclick="setCategory('dakuten')">濁点・半濁点</button>
   <button class="category-tab" onclick="setCategory('sokuon')">促音</button>
   <button class="category-tab" onclick="setCategory('yoon')">拗音</button>
-  <button class="category-tab" id="summaryTab" onclick="setCategory('summary')" style="display:none;">まとめ</button>
+  <button class="category-tab" id="summaryTab" onclick="setCategory('summary')">まとめ</button>
 </div>
 
 <div class="mode-tabs">
-  <button class="mode-tab active" onclick="setMode('learn')">学習モード</button>
+  <button class="mode-tab active" id="learnModeBtn" onclick="setMode('learn')">学習モード</button>
   <button class="mode-tab" id="quizModeBtn" onclick="setMode('quiz')">クイズモード</button>
 </div>
 
@@ -306,23 +306,30 @@ function updateCategoryTabsActive() {
   });
 }
 
+function updateModeDisplay() {
+  document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.textContent.includes(mode==='learn'?'学習':'クイズ')));
+  document.getElementById('learnArea').style.display = mode==='learn' ? 'block' : 'none';
+  document.getElementById('quizArea').style.display = mode==='quiz' ? 'block' : 'none';
+}
+
 function setCategory(cat) {
-  if (cat === 'summary' && mode !== 'quiz') return;
   currentCategory = cat;
   currentIndex = 0;
+  if (cat === 'summary') mode = 'quiz';
   updateCategoryTabsActive();
   updateQuizButtonState();
   if (cat === 'sokuon' && mode === 'quiz') { mode = 'learn'; setMode('learn'); }
+  updateModeDisplay();
   buildTable();
   updateDisplay();
   if (mode === 'quiz') { quizCorrect = 0; quizTotal = 0; nextQuiz(); }
 }
 
 function updateQuizButtonState() {
+  const learnBtn = document.getElementById('learnModeBtn');
+  if (learnBtn) learnBtn.disabled = currentCategory === 'summary';
   const btn = document.getElementById('quizModeBtn');
   if (btn) btn.disabled = currentCategory === 'sokuon';
-  const summaryTab = document.getElementById('summaryTab');
-  if (summaryTab) summaryTab.style.display = mode === 'quiz' ? '' : 'none';
 }
 
 function buildTable() {
@@ -457,11 +464,9 @@ function nextChar() { const n = getCharList().length; currentIndex = (currentInd
 // ============================================================
 function setMode(m) {
   if (m === 'quiz' && currentCategory === 'sokuon') return;
+  if (m === 'learn' && currentCategory === 'summary') return;
   mode = m;
-  if (m === 'learn' && currentCategory === 'summary') currentCategory = 'sei';
-  document.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.textContent.includes(m==='learn'?'学習':'クイズ')));
-  document.getElementById('learnArea').style.display = m==='learn' ? 'block' : 'none';
-  document.getElementById('quizArea').style.display = m==='quiz' ? 'block' : 'none';
+  updateModeDisplay();
   updateQuizButtonState();
   updateCategoryTabsActive();
   buildTable();
