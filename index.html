@@ -31,6 +31,7 @@
   /* 五十音表 */
   .gojuon-table { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; max-width: 480px; width: 95%; margin: 8px auto; }
   .gojuon-table.cols-6 { grid-template-columns: repeat(6, 1fr); max-width: 560px; }
+  .gojuon-table.cols-summary { grid-template-columns: repeat(6, 1fr); max-width: 620px; }
   .gojuon-table .cell {
     background: #fff; border: 2px solid #ddd; border-radius: 10px;
     text-align: center; font-size: 1.3rem; padding: 7px 0;
@@ -142,6 +143,7 @@
   <button class="category-tab" onclick="setCategory('dakuten')">濁点・半濁点</button>
   <button class="category-tab" onclick="setCategory('sokuon')">促音</button>
   <button class="category-tab" onclick="setCategory('yoon')">拗音</button>
+  <button class="category-tab" onclick="setCategory('summary')">まとめ</button>
 </div>
 
 <div class="mode-tabs">
@@ -267,9 +269,32 @@ const YOON_ROWS = [
   ['ピャ','ピュ','ピョ','','','']
 ];
 
+// まとめ（清音 + 濁点・半濁点 + 拗音）
+const SUMMARY = [...KATAKANA, ...DAKUTEN, ...YOON];
+const SUMMARY_ROWS = [
+  ['ア','イ','ウ','エ','オ','カ'],
+  ['キ','ク','ケ','コ','サ','シ'],
+  ['ス','セ','ソ','タ','チ','ツ'],
+  ['テ','ト','ナ','ニ','ヌ','ネ'],
+  ['ノ','ハ','ヒ','フ','ヘ','ホ'],
+  ['マ','ミ','ム','メ','モ','ヤ'],
+  ['ユ','ヨ','ラ','リ','ル','レ'],
+  ['ロ','ワ','ヲ','ン','ガ','ギ'],
+  ['グ','ゲ','ゴ','ザ','ジ','ズ'],
+  ['ゼ','ゾ','ダ','ヂ','ヅ','デ'],
+  ['ド','バ','ビ','ブ','ベ','ボ'],
+  ['パ','ピ','プ','ペ','ポ','キャ'],
+  ['キュ','キョ','シャ','シュ','ショ','チャ'],
+  ['チュ','チョ','ニャ','ニュ','ニョ','ヒャ'],
+  ['ヒュ','ヒョ','ミャ','ミュ','ミョ','リャ'],
+  ['リュ','リョ','ギャ','ギュ','ギョ','ジャ'],
+  ['ジュ','ジョ','ビャ','ビュ','ビョ','ピャ'],
+  ['ピュ','ピョ','','','','']
+];
+
 // ----- 状態 -----
 let currentIndex = 0;
-let currentCategory = 'sei'; // sei, dakuten, sokuon, yoon
+let currentCategory = 'sei'; // sei, dakuten, sokuon, yoon, summary
 let mode = 'learn';
 let quizCorrect = 0, quizTotal = 0, quizAnswered = false;
 
@@ -277,6 +302,7 @@ function getCharList() {
   if (currentCategory === 'sei') return KATAKANA;
   if (currentCategory === 'dakuten') return DAKUTEN;
   if (currentCategory === 'sokuon') return SOKUON;
+  if (currentCategory === 'summary') return SUMMARY;
   return YOON;
 }
 
@@ -295,9 +321,11 @@ function setCategory(cat) {
     const isDakuten = t.textContent === '濁点・半濁点';
     const isSokuon = t.textContent === '促音';
     const isYoon = t.textContent === '拗音';
+    const isSummary = t.textContent === 'まとめ';
     t.classList.toggle('active',
       (cat === 'sei' && isSei) || (cat === 'dakuten' && isDakuten) ||
-      (cat === 'sokuon' && isSokuon) || (cat === 'yoon' && isYoon));
+      (cat === 'sokuon' && isSokuon) || (cat === 'yoon' && isYoon) ||
+      (cat === 'summary' && isSummary));
   });
   updateQuizButtonState();
   if (cat === 'sokuon' && mode === 'quiz') { mode = 'learn'; setMode('learn'); }
@@ -318,8 +346,10 @@ function buildTable() {
   if (currentCategory === 'sei') { rows = ROWS; list = KATAKANA; }
   else if (currentCategory === 'dakuten') { rows = DAKUTEN_ROWS; list = DAKUTEN; }
   else if (currentCategory === 'sokuon') { rows = SOKUON_ROWS; list = SOKUON; }
+  else if (currentCategory === 'summary') { rows = SUMMARY_ROWS; list = SUMMARY; }
   else { rows = YOON_ROWS; list = YOON; }
   table.classList.toggle('cols-6', currentCategory === 'yoon');
+  table.classList.toggle('cols-summary', currentCategory === 'summary');
   rows.forEach(row => {
     row.forEach(ch => {
       const div = document.createElement('div');
