@@ -148,6 +148,7 @@
 <div class="mode-tabs">
   <button class="mode-tab active" id="learnModeBtn" onclick="setMode('learn')">学習モード</button>
   <button class="mode-tab" id="quizModeBtn" onclick="setMode('quiz')">クイズモード</button>
+  <button class="mode-tab" onclick="shuffleGojuonTable()">シャッフル</button>
 </div>
 
 <div class="gojuon-table" id="gojuonTable"></div>
@@ -274,6 +275,7 @@ const SUMMARY = [...KATAKANA, ...DAKUTEN, ...YOON];
 // ----- 状態 -----
 let currentIndex = 0;
 let currentCategory = 'sei'; // sei, dakuten, sokuon, yoon, summary
+let shuffledRows = null; // 五十音表の表示用（null=正順）
 let mode = 'learn';
 let quizCorrect = 0, quizTotal = 0, quizAnswered = false;
 
@@ -315,6 +317,7 @@ function updateModeDisplay() {
 function setCategory(cat) {
   currentCategory = cat;
   currentIndex = 0;
+  shuffledRows = null;
   if (cat === 'summary') mode = 'quiz';
   updateCategoryTabsActive();
   updateQuizButtonState();
@@ -332,16 +335,24 @@ function updateQuizButtonState() {
   if (btn) btn.disabled = currentCategory === 'sokuon';
 }
 
+function getBaseRows() {
+  if (currentCategory === 'sei') return ROWS;
+  if (currentCategory === 'dakuten') return DAKUTEN_ROWS;
+  if (currentCategory === 'sokuon') return SOKUON_ROWS;
+  return YOON_ROWS;
+}
+
 function buildTable() {
   const table = document.getElementById('gojuonTable');
   table.innerHTML = '';
   table.style.display = currentCategory === 'summary' ? 'none' : 'grid';
   if (currentCategory === 'summary') return;
-  let rows, list;
-  if (currentCategory === 'sei') { rows = ROWS; list = KATAKANA; }
-  else if (currentCategory === 'dakuten') { rows = DAKUTEN_ROWS; list = DAKUTEN; }
-  else if (currentCategory === 'sokuon') { rows = SOKUON_ROWS; list = SOKUON; }
-  else { rows = YOON_ROWS; list = YOON; }
+  let list;
+  if (currentCategory === 'sei') list = KATAKANA;
+  else if (currentCategory === 'dakuten') list = DAKUTEN;
+  else if (currentCategory === 'sokuon') list = SOKUON;
+  else list = YOON;
+  const rows = shuffledRows || getBaseRows();
   table.classList.toggle('cols-6', currentCategory === 'yoon');
   rows.forEach(row => {
     row.forEach(ch => {
@@ -355,6 +366,18 @@ function buildTable() {
       table.appendChild(div);
     });
   });
+}
+
+function shuffleGojuonTable() {
+  if (currentCategory === 'summary') return;
+  const baseRows = getBaseRows();
+  const chars = [];
+  baseRows.forEach(row => row.forEach(ch => { if (ch) chars.push(ch); }));
+  shuffle(chars);
+  let i = 0;
+  shuffledRows = baseRows.map(row => row.map(ch => ch ? chars[i++] : ''));
+  buildTable();
+  highlightTable();
 }
 
 function highlightTable() {
